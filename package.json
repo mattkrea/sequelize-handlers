@@ -1,6 +1,6 @@
 {
   "name": "@harbortouch/sequelize-rest-handlers",
-  "version": "1.0.0-beta2",
+  "version": "1.0.0-beta3",
   "description": "Create REST handlers for Sequelize models",
   "main": "index.js",
   "scripts": {

@@ -122,6 +122,11 @@ exports.createController = (model, options) => {
 
 	router.post('/', (req, res) => {
 		model.create(req.body[model.name], buildWhere(methods.POST, req, options)).then((results) => {
+
+			if (options.hooks && typeof options.hooks.afterCreate === 'function') {
+				options.hooks.afterCreate(model, results);
+			}
+
 			return res.status(200).json(formatOutput(results, model, options));
 		}).catch((e) => {
 			switch (e.name) {
@@ -160,6 +165,11 @@ exports.createController = (model, options) => {
 
 			return result.save();
 		}).then((results) => {
+
+			if (options.hooks && typeof options.hooks.afterUpdate === 'function') {
+				options.hooks.afterUpdate(model, results);
+			}
+
 			return res.status(200).json(formatOutput(results, model, options));
 		}).catch((e) => {
 			switch (e.name) {

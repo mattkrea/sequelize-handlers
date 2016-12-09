@@ -46,3 +46,9 @@ Create REST handers for Sequelize models
 Routes generated will support filtering in the Ember style i.e. `/api/v1/articles/?filter[published]=true.
 
 In addition both `limit` and `offset` are supported.
+
+## Supported Hooks
+
+* `beforeUpdate`
+* `afterUpdate`
+* `afterCreate`
