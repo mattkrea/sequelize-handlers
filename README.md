@@ -20,7 +20,13 @@ Create REST handers for Sequelize models
 					'author'
 				]
 			}
-		]
+		],
+		hooks: {
+			beforeUpdate: function(model, instance) {
+				let changes = instance.changed();
+				// ... do something with changelog
+			}
+		}
 	});
 
 	// The resulting router will be able to handle:

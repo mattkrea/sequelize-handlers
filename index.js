@@ -154,8 +154,8 @@ exports.createController = (model, options) => {
 				result.set(field, req.body[model.name][field]);
 			});
 
-			if (model.name === 'employee') {
-				trackChanges(result.changed(), result);
+			if (options.hooks && typeof options.hooks.beforeUpdate === 'function') {
+				options.hooks.beforeUpdate(model, result);
 			}
 
 			return result.save();
