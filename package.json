@@ -1,0 +1,38 @@
+{
+  "name": "sequelize-rest-handlers",
+  "version": "1.0.0-beta1",
+  "description": "Create REST handlers for Sequelize models",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha tests"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Harbortouch/sequelize-rest-handlers.git"
+  },
+  "keywords": [
+    "sequelize",
+    "rest",
+    "api",
+    "express",
+    "models"
+  ],
+  "author": "mattkrea",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Harbortouch/sequelize-rest-handlers/issues"
+  },
+  "homepage": "https://github.com/Harbortouch/sequelize-rest-handlers#readme",
+  "dependencies": {
+    "body-parser": "^1.15.2",
+    "express": "^4.14.0",
+    "pluralize": "^3.0.0"
+  },
+  "devDependencies": {
+    "istanbul": "^0.4.5",
+    "mocha": "^3.2.0",
+    "sequelize": "^3.27.0",
+    "sqlite3": "^3.1.8",
+    "supertest": "^2.0.1"
+  }
+}
