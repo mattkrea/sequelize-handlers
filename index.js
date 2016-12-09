@@ -1,5 +1,6 @@
 'use strict';
 
+const Sequelize = require('sequelize');
 const pluralize = require('pluralize');
 const parser = require('body-parser');
 const express = require('express');
@@ -13,7 +14,8 @@ const methods = {
 };
 
 const errors = {
-	notFound: new Error('record not found')
+	notFound: new Error(`record not found`),
+	invalidModel: new TypeError(`'model' must be a valid Sequelize model`)
 };
 
 let buildWhere = (method, req, options) => {
@@ -77,6 +79,11 @@ let formatOutput = (results, model, options) => {
 };
 
 exports.createController = (model, options) => {
+
+	if (!(model instanceof Sequelize.Model)) {
+		throw errors.invalidModel;
+	}
+
 	const router = express.Router();
 
 	options = Object.assign({

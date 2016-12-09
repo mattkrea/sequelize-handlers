@@ -26,7 +26,8 @@
   "dependencies": {
     "body-parser": "^1.15.2",
     "express": "^4.14.0",
-    "pluralize": "^3.0.0"
+    "pluralize": "^3.0.0",
+    "sequelize": "^3.27.0"
   },
   "devDependencies": {
     "istanbul": "^0.4.5",
