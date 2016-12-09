@@ -10,6 +10,9 @@ Create REST handers for Sequelize models
 	const router = createController(models.Post, {
 		// Customize the top-level property in the resulting JSON
 		overrideOutputName: 'article',
+		// By default `body-parser.json()` is enabled on the router--If you wish to
+		// disable this you *must* populate `req.body` another way
+		disableBodyParser: false,
 		// These relations are passed directly to Model.findAll.include
 		relationships: [
 			db.Author,

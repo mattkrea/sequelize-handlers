@@ -1,7 +1,7 @@
 'use strict';
 
 const Sequelize = require('sequelize');
-const pluralize = require('pluralize');
+const pluralize = Sequelize.Utils.pluralize;
 const parser = require('body-parser');
 const express = require('express');
 
@@ -87,13 +87,16 @@ exports.createController = (model, options) => {
 	const router = express.Router();
 
 	options = Object.assign({
+		disableBodyParser: false,
 		overrideOutputName: null,
 		limit: undefined,
 		restrictedFields: [],
 		relationships: []
 	}, options);
 
-	router.use(parser.json());
+	if (options.disableBodyParser !== true) {
+		router.use(parser.json());
+	}
 
 	router.get('/', (req, res) => {
 		model.findAll(buildWhere(methods.GET, req, options)).then((results) => {
