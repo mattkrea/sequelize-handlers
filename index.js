@@ -122,6 +122,12 @@ exports.createController = (model, options) => {
 		limit: undefined,
 		restrictedFields: [],
 		relationships: [],
+		handlers: [
+			get: true,
+			put: true,
+			post: true,
+			delete: true
+		],
 		middleware: {
 			pre: [],
 			post: []
@@ -148,156 +154,164 @@ exports.createController = (model, options) => {
 		});
 	}
 
-	router.get('/', (req, res) => {
+	if (options.handlers.get === true) {
+		router.get('/', (req, res) => {
 
-		let query = buildWhere(methods.GET, req, options);
+			let query = buildWhere(methods.GET, req, options);
 
-		// By default we will not look up relations on the root endpoint as
-		// this can become very slow with a lot of records
-		if (options.includeRelationsInGetAll !== true) {
-			delete query.include;
-		}
-
-		model.findAll(query).then((results) => {
-			return res.status(200).json(formatOutput(results, model, options));
-		}).catch((e) => {
-			return res.status(500).json({ errors: [{ message: e.message }] });
-		});
-	});
-
-	router.get('/:id', (req, res) => {
-		model.findOne(buildWhere(methods.GET, req, options)).then((results) => {
-			if (!results) {
-				throw errors.notFound;
+			// By default we will not look up relations on the root endpoint as
+			// this can become very slow with a lot of records
+			if (options.includeRelationsInGetAll !== true) {
+				delete query.include;
 			}
 
-			return res.status(200).json(formatOutput(results, model, options));
-		}).catch((e) => {
-			switch (e) {
-			case errors.notFound:
-				return res.status(404).json({ errors: [{ message: e.message }] });
-			}
-
-			return res.status(500).json({ errors: [{ message: e.message }] });
-		});
-	});
-
-	router.post('/', (req, res) => {
-		model.create(req.body[model.name], buildWhere(methods.POST, req, options)).then((results) => {
-
-			if (options.hooks && typeof options.hooks.afterCreate === 'function') {
-				options.hooks.afterCreate(model, results);
-			}
-
-			return res.status(200).json(formatOutput(results, model, options));
-		}).catch((e) => {
-			switch (e.name) {
-			case 'SequelizeValidationError':
-			case 'SequelizeUniqueConstraintError':
-
-				let results = [];
-
-				e.errors.forEach((x) => {
-					results.push({
-						message: x.message,
-						field: x.path
-					});
-				});
-
-				return res.status(422).json({ errors: results });
-			}
-
-			return res.status(500).json({ errors: [{ message: e.message }] });
-		});
-	});
-
-	router.put('/:id', (req, res) => {
-
-		// Prevent a consumer from changing the primary key of a given record
-		if (options.allowChangingPrimaryKey !== true
-			&& model.primaryKeyField
-			&& typeof req.body[model.name][model.primaryKeyField] !== 'undefined') {
-
-			if (req.params.id != req.body[model.name][model.primaryKeyField]) {
-				return res.status(422).json({
-					errors: [{
-						message: 'cannot change record primary key',
-						field: model.primaryKeyField
-					}]
-				});
-			}
-		}
-
-		model.findOne(buildWhere(methods.PUT, req, options)).then((result) => {
-			if (!result) {
-				throw errors.notFound;
-			}
-
-			Object.keys(req.body[model.name]).forEach((field) => {
-				result.set(field, req.body[model.name][field]);
+			model.findAll(query).then((results) => {
+				return res.status(200).json(formatOutput(results, model, options));
+			}).catch((e) => {
+				return res.status(500).json({ errors: [{ message: e.message }] });
 			});
+		});
 
-			if (options.hooks && typeof options.hooks.beforeUpdate === 'function') {
-				options.hooks.beforeUpdate(model, result);
-			}
+		router.get('/:id', (req, res) => {
+			model.findOne(buildWhere(methods.GET, req, options)).then((results) => {
+				if (!results) {
+					throw errors.notFound;
+				}
 
-			return result.save();
-		}).then((results) => {
+				return res.status(200).json(formatOutput(results, model, options));
+			}).catch((e) => {
+				switch (e) {
+				case errors.notFound:
+					return res.status(404).json({ errors: [{ message: e.message }] });
+				}
 
-			if (options.hooks && typeof options.hooks.afterUpdate === 'function') {
-				options.hooks.afterUpdate(model, results);
-			}
+				return res.status(500).json({ errors: [{ message: e.message }] });
+			});
+		});
+	}
 
-			return res.status(200).json(formatOutput(results, model, options));
-		}).catch((e) => {
-			switch (e.name) {
-			case 'SequelizeValidationError':
-			case 'SequelizeUniqueConstraintError':
+	if (req.handlers.post === true) {
+		router.post('/', (req, res) => {
+			model.create(req.body[model.name], buildWhere(methods.POST, req, options)).then((results) => {
 
-				let results = [];
+				if (options.hooks && typeof options.hooks.afterCreate === 'function') {
+					options.hooks.afterCreate(model, results);
+				}
 
-				e.errors.forEach((x) => {
-					results.push({
-						message: x.message,
-						field: x.path
+				return res.status(200).json(formatOutput(results, model, options));
+			}).catch((e) => {
+				switch (e.name) {
+				case 'SequelizeValidationError':
+				case 'SequelizeUniqueConstraintError':
+
+					let results = [];
+
+					e.errors.forEach((x) => {
+						results.push({
+							message: x.message,
+							field: x.path
+						});
 					});
+
+					return res.status(422).json({ errors: results });
+				}
+
+				return res.status(500).json({ errors: [{ message: e.message }] });
+			});
+		});
+	}
+
+	if (req.handlers.put === true) {
+		router.put('/:id', (req, res) => {
+
+			// Prevent a consumer from changing the primary key of a given record
+			if (options.allowChangingPrimaryKey !== true
+				&& model.primaryKeyField
+				&& typeof req.body[model.name][model.primaryKeyField] !== 'undefined') {
+
+				if (req.params.id != req.body[model.name][model.primaryKeyField]) {
+					return res.status(422).json({
+						errors: [{
+							message: 'cannot change record primary key',
+							field: model.primaryKeyField
+						}]
+					});
+				}
+			}
+
+			model.findOne(buildWhere(methods.PUT, req, options)).then((result) => {
+				if (!result) {
+					throw errors.notFound;
+				}
+
+				Object.keys(req.body[model.name]).forEach((field) => {
+					result.set(field, req.body[model.name][field]);
 				});
 
-				return res.status(422).json({ errors: results });
-			case 'SequelizeDatabaseError':
-				return res.status(422).json({ errors: [{ message: e.message }] });
-			}
+				if (options.hooks && typeof options.hooks.beforeUpdate === 'function') {
+					options.hooks.beforeUpdate(model, result);
+				}
 
-			switch (e) {
-			case errors.notFound:
-				return res.status(404).json({ errors: [{ message: e.message }] });
-			}
+				return result.save();
+			}).then((results) => {
 
-			return res.status(500).json({ errors: [{ message: e.message }] });
+				if (options.hooks && typeof options.hooks.afterUpdate === 'function') {
+					options.hooks.afterUpdate(model, results);
+				}
+
+				return res.status(200).json(formatOutput(results, model, options));
+			}).catch((e) => {
+				switch (e.name) {
+				case 'SequelizeValidationError':
+				case 'SequelizeUniqueConstraintError':
+
+					let results = [];
+
+					e.errors.forEach((x) => {
+						results.push({
+							message: x.message,
+							field: x.path
+						});
+					});
+
+					return res.status(422).json({ errors: results });
+				case 'SequelizeDatabaseError':
+					return res.status(422).json({ errors: [{ message: e.message }] });
+				}
+
+				switch (e) {
+				case errors.notFound:
+					return res.status(404).json({ errors: [{ message: e.message }] });
+				}
+
+				return res.status(500).json({ errors: [{ message: e.message }] });
+			});
 		});
-	});
+	}
 
-	router.delete('/:id', (req, res) => {
-		model.destroy(buildWhere(methods.DELETE, req, options)).then((affected) => {
-			if (affected !== 1) {
-				throw errors.notFound;
-			}
+	if (req.handlers.delete === true) {
+		router.delete('/:id', (req, res) => {
+			model.destroy(buildWhere(methods.DELETE, req, options)).then((affected) => {
+				if (affected !== 1) {
+					throw errors.notFound;
+				}
 
-			return res.status(200).json({ status: 'ok' });
-		}).catch((e) => {
-			switch (e.name) {
-			case 'SequelizeForeignKeyConstraintError':
-				return res.status(400).json({ errors: [{ message: 'foreign key constraint error' }]});
-			}
+				return res.status(200).json({ status: 'ok' });
+			}).catch((e) => {
+				switch (e.name) {
+				case 'SequelizeForeignKeyConstraintError':
+					return res.status(400).json({ errors: [{ message: 'foreign key constraint error' }]});
+				}
 
-			switch (e) {
-			case errors.notFound:
-				return res.status(404).json({ errors: [{ message: e.message }] });
-			}
+				switch (e) {
+				case errors.notFound:
+					return res.status(404).json({ errors: [{ message: e.message }] });
+				}
 
-			return res.status(500).json({ errors: [{ message: e.message }] });
+				return res.status(500).json({ errors: [{ message: e.message }] });
+			});
 		});
-	});
+	}
 
 	return router;
 };
