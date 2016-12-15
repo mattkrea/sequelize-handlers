@@ -30,12 +30,6 @@ let buildWhere = (method, req, options) => {
 		query.where.id = req.params.id;
 	}
 
-	if (req.query.filter) {
-		Object.keys(req.query.filter).forEach((field) => {
-			query.where[field] = req.query.filter[field];
-		});
-	}
-
 	if (method === methods.POST) {
 		query.returning = true;
 	}
@@ -54,6 +48,40 @@ let buildWhere = (method, req, options) => {
 		if (req.query.offset) {
 			query.offset = req.query.offset;
 		}
+
+		if (req.query.filter) {
+			Object.keys(req.query.filter).forEach((field) => {
+				query.where[field] = req.query.filter[field];
+			});
+		}
+
+		if (req.query.search) {
+			Object.keys(req.query.search).forEach((field) => {
+				if (options.useLike === true) {
+					query.where[field] = {
+						$like: `%${req.query.search[field]}%`
+					}
+				} else {
+					query.where[field] = {
+						$iLike: `%${req.query.search[field]}%`
+					}
+				}
+			});
+		}
+
+		if (req.query.attributes) {
+			try {
+				req.query.attributes = req.query.attributes.split(',');
+			} catch (e) {
+				// Should we error here?
+			}
+
+			query.attributes = req.query.attributes;
+		}
+	}
+
+	if (options.hooks && typeof options.hooks.beforeQuery === 'function') {
+		options.hooks.beforeQuery(query, req);
 	}
 
 	return query;
@@ -87,28 +115,59 @@ exports.createController = (model, options) => {
 	const router = express.Router();
 
 	options = Object.assign({
+		allowChangingPrimaryKey: false,
+		includeRelationsInGetAll: false,
 		disableBodyParser: false,
 		overrideOutputName: null,
 		limit: undefined,
 		restrictedFields: [],
-		relationships: []
+		relationships: [],
+		middleware: {
+			pre: [],
+			post: []
+		},
+		useLike: true
 	}, options);
 
 	if (options.disableBodyParser !== true) {
 		router.use(parser.json());
 	}
 
+	// Override for `$iLike` in Postgres
+	try {
+		if (model.sequelize.dialect.name === 'postgres') {
+			options.useLike = false;
+		}
+	} catch (e) {
+		// Nothing to do here
+	}
+
+	if (options.middleware && Array.isArray(options.middleware)) {
+		options.middleware.forEach((middleware) => {
+			router.use(middleware);
+		});
+	}
+
 	router.get('/', (req, res) => {
-		model.findAll(buildWhere(methods.GET, req, options)).then((results) => {
+
+		let query = buildWhere(methods.GET, req, options);
+
+		// By default we will not look up relations on the root endpoint as
+		// this can become very slow with a lot of records
+		if (options.includeRelationsInGetAll !== true) {
+			delete query.include;
+		}
+
+		model.findAll(query).then((results) => {
 			return res.status(200).json(formatOutput(results, model, options));
 		}).catch((e) => {
-			return res.status(500).json({ errors: [e.message] });
+			return res.status(500).json({ errors: [{ message: e.message }] });
 		});
 	});
 
 	router.get('/:id', (req, res) => {
 		model.findOne(buildWhere(methods.GET, req, options)).then((results) => {
-			if (typeof results === 'undefined') {
+			if (!results) {
 				throw errors.notFound;
 			}
 
@@ -116,10 +175,10 @@ exports.createController = (model, options) => {
 		}).catch((e) => {
 			switch (e) {
 			case errors.notFound:
-				return res.status(404).json({ errors: [e.message] });
+				return res.status(404).json({ errors: [{ message: e.message }] });
 			}
 
-			return res.status(500).json({ errors: [e.message] });
+			return res.status(500).json({ errors: [{ message: e.message }] });
 		});
 	});
 
@@ -148,11 +207,27 @@ exports.createController = (model, options) => {
 				return res.status(422).json({ errors: results });
 			}
 
-			return res.status(500).json({ errors: [e.message] });
+			return res.status(500).json({ errors: [{ message: e.message }] });
 		});
 	});
 
 	router.put('/:id', (req, res) => {
+
+		// Prevent a consumer from changing the primary key of a given record
+		if (options.allowChangingPrimaryKey !== true
+			&& model.primaryKeyField
+			&& typeof req.body[model.name][model.primaryKeyField] !== 'undefined') {
+
+			if (req.params.id != req.body[model.name][model.primaryKeyField]) {
+				return res.status(422).json({
+					errors: [{
+						message: 'cannot change record primary key',
+						field: model.primaryKeyField
+					}]
+				});
+			}
+		}
+
 		model.findOne(buildWhere(methods.PUT, req, options)).then((result) => {
 			if (!result) {
 				throw errors.notFound;
@@ -190,15 +265,15 @@ exports.createController = (model, options) => {
 
 				return res.status(422).json({ errors: results });
 			case 'SequelizeDatabaseError':
-				return res.status(422).json({ errors: [e.message] });
+				return res.status(422).json({ errors: [{ message: e.message }] });
 			}
 
 			switch (e) {
 			case errors.notFound:
-				return res.status(404).json({ errors: [e.message] });
+				return res.status(404).json({ errors: [{ message: e.message }] });
 			}
 
-			return res.status(500).json({ errors: [e.message] });
+			return res.status(500).json({ errors: [{ message: e.message }] });
 		});
 	});
 
@@ -210,12 +285,17 @@ exports.createController = (model, options) => {
 
 			return res.status(200).json({ status: 'ok' });
 		}).catch((e) => {
-			switch (e) {
-			case errors.notFound:
-				return res.status(404).json({ errors: [e.message] });
+			switch (e.name) {
+			case 'SequelizeForeignKeyConstraintError':
+				return res.status(400).json({ errors: [{ message: 'foreign key constraint error' }]});
 			}
 
-			return res.status(500).json({ errors: [e.message] });
+			switch (e) {
+			case errors.notFound:
+				return res.status(404).json({ errors: [{ message: e.message }] });
+			}
+
+			return res.status(500).json({ errors: [{ message: e.message }] });
 		});
 	});
 

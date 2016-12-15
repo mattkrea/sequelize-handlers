@@ -8,6 +8,11 @@ Create REST handers for Sequelize models
 	const app = require('express')();
 
 	const router = createController(models.Post, {
+		// Allow the primary key to be modified during a PUT
+		allowChangingPrimaryKey: false,
+		// Include model relations in a request to `/`
+		// WARNING: this will get slower with large databases
+		includeRelationsInGetAll: false
 		// Customize the top-level property in the resulting JSON
 		overrideOutputName: 'article',
 		// By default `body-parser.json()` is enabled on the router--If you wish to
@@ -24,10 +29,23 @@ Create REST handers for Sequelize models
 				]
 			}
 		],
+		// Optionally add middleware to run at the start of the request
+		middleware: [
+			(req, res, next) => {
+				// ... do something with the request before the
+				// other handlers get the request
+			}
+		],
 		hooks: {
+			// Need to track changes on models?
 			beforeUpdate: function(model, instance) {
 				let changes = instance.changed();
 				// ... do something with changelog
+			},
+			// Or maybe you need to modify the Sequelize query
+			// based upon some property in the request
+			beforeQuery: function(query, request) {
+				query.where.locationId = req.currentLocation.get('id');
 			}
 		}
 	});
