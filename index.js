@@ -90,7 +90,10 @@ let buildWhere = (method, req, options) => {
 let formatOutput = (results, model, options) => {
 	let response = {};
 	let plural = Array.isArray(results);
-	if (options.overrideOutputName) {
+
+	if (options.disableNestedData === true) {
+		return results;
+	} else if (options.overrideOutputName) {
 		if (plural) {
 			response[pluralize(options.overrideOutputName)] = results;
 		} else {
@@ -122,12 +125,12 @@ exports.createController = (model, options) => {
 		limit: undefined,
 		restrictedFields: [],
 		relationships: [],
-		handlers: [
+		handlers: {
 			get: true,
 			put: true,
 			post: true,
 			delete: true
-		],
+		},
 		middleware: {
 			pre: [],
 			post: []
@@ -190,9 +193,12 @@ exports.createController = (model, options) => {
 		});
 	}
 
-	if (req.handlers.post === true) {
+	if (options.handlers.post === true) {
 		router.post('/', (req, res) => {
-			model.create(req.body[model.name], buildWhere(methods.POST, req, options)).then((results) => {
+
+			let input = (options.disableNestedData === true ? req.body : req.body[model.name]);
+
+			model.create(input, buildWhere(methods.POST, req, options)).then((results) => {
 
 				if (options.hooks && typeof options.hooks.afterCreate === 'function') {
 					options.hooks.afterCreate(model, results);
@@ -221,7 +227,7 @@ exports.createController = (model, options) => {
 		});
 	}
 
-	if (req.handlers.put === true) {
+	if (options.handlers.put === true) {
 		router.put('/:id', (req, res) => {
 
 			// Prevent a consumer from changing the primary key of a given record
@@ -244,8 +250,10 @@ exports.createController = (model, options) => {
 					throw errors.notFound;
 				}
 
-				Object.keys(req.body[model.name]).forEach((field) => {
-					result.set(field, req.body[model.name][field]);
+				let input = (options.disableNestedData === true ? req.body : req.body[model.name]);
+
+				Object.keys(input).forEach((field) => {
+					result.set(field, input[field]);
 				});
 
 				if (options.hooks && typeof options.hooks.beforeUpdate === 'function') {
@@ -289,7 +297,7 @@ exports.createController = (model, options) => {
 		});
 	}
 
-	if (req.handlers.delete === true) {
+	if (options.handlers.delete === true) {
 		router.delete('/:id', (req, res) => {
 			model.destroy(buildWhere(methods.DELETE, req, options)).then((affected) => {
 				if (affected !== 1) {

@@ -197,4 +197,44 @@ describe('createController()', () => {
 				// Nothing to do here
 			});
 	});
+
+	it('should allow disabling of specific handlers', (done) => {
+		const app = require('express')();
+		app.use('/authors', createController(db.author, {
+			handlers: {
+				get: false,
+				put: true,
+				post: true,
+				delete: true
+			}
+		}));
+		app.use((req, res) => {
+			done();
+		});
+		const request = supertest(app);
+
+		request.get('/authors/1')
+			.expect(200, (e, res) => {
+				// Nothing to do here
+			});
+	});
+
+	it('should allow non-nested data submission and response', (done) => {
+		const app = require('express')();
+		app.use('/authors', createController(db.author, {
+			disableNestedData: true
+		}));
+		const request = supertest(app);
+
+		request.post('/authors')
+			.set('Content-Type', 'application/json')
+			.send({
+				id: 5,
+				name: 'non-nested'
+			})
+			.expect(200, (e, res) => {
+				assert.equal(res.body.name, 'non-nested');
+				done();
+			});
+	});
 });
