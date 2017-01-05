@@ -1,8 +1,6 @@
 'use strict';
 
 const Sequelize = require('sequelize');
-const path = require('path');
-const fs = require('fs');
 
 const sequelize = new Sequelize('test', '', '', {
 	dialect: 'sqlite',

@@ -68,7 +68,7 @@ describe('createController()', () => {
 					req.testValue = 'test';
 					return next();
 				},
-				(req, res, next) => {
+				(req) => {
 					assert.equal(req.testValue, 'test');
 					done();
 				}
@@ -77,7 +77,7 @@ describe('createController()', () => {
 		const request = supertest(app);
 
 		request.get('/authors')
-			.expect(200, (e, res) => {
+			.expect(200, () => {
 				// Nothing
 			});
 	});
@@ -87,7 +87,7 @@ describe('createController()', () => {
 		app.use('/authors', createController(db.author, {
 			disableBodyParser: true,
 			middleware: [
-				(req, res, next) => {
+				(req) => {
 					assert.equal(typeof req.body, 'undefined');
 					done();
 				}
@@ -100,7 +100,7 @@ describe('createController()', () => {
 			.send({
 				name: 'Test'
 			})
-			.expect(200, (e, res) => {
+			.expect(200, () => {
 				// Nothing
 			});
 	});
@@ -109,7 +109,7 @@ describe('createController()', () => {
 		const app = require('express')();
 		app.use('/authors', createController(db.author, {
 			hooks: {
-				beforeQuery: (query, req) => {
+				beforeQuery: (query) => {
 					assert.equal(query.where.id, 1);
 					done();
 				}
@@ -118,7 +118,7 @@ describe('createController()', () => {
 		const request = supertest(app);
 
 		request.get('/authors/1')
-			.expect(200, (e, res) => {
+			.expect(200, () => {
 				// Nothing
 			});
 	});
@@ -143,7 +143,7 @@ describe('createController()', () => {
 					name: 'Testerooni'
 				}
 			})
-			.expect(200, (e, res) => {
+			.expect(200, () => {
 				// Nothing to do here
 			});
 	});
@@ -168,7 +168,7 @@ describe('createController()', () => {
 					name: 'Bam'
 				}
 			})
-			.expect(200, (e, res) => {
+			.expect(200, () => {
 				// Nothing to do here
 			});
 	});
@@ -193,7 +193,7 @@ describe('createController()', () => {
 					name: 'Bam'
 				}
 			})
-			.expect(200, (e, res) => {
+			.expect(200, () => {
 				// Nothing to do here
 			});
 	});
@@ -208,13 +208,13 @@ describe('createController()', () => {
 				delete: true
 			}
 		}));
-		app.use((req, res) => {
+		app.use(() => {
 			done();
 		});
 		const request = supertest(app);
 
 		request.get('/authors/1')
-			.expect(200, (e, res) => {
+			.expect(200, () => {
 				// Nothing to do here
 			});
 	});

@@ -1,7 +1,6 @@
 'use strict';
 
 const { createRouter } = require('../index');
-const Sequelize = require('sequelize');
 const supertest = require('supertest');
 const assert = require('assert');
 const db = require('./db');
@@ -71,7 +70,7 @@ describe('createRouter()', () => {
 							req.testValue = 'test';
 							return next();
 						},
-						(req, res, next) => {
+						(req) => {
 							assert.equal(req.testValue, 'test');
 							done();
 						}
@@ -82,7 +81,7 @@ describe('createRouter()', () => {
 		const request = supertest(app);
 
 		request.get('/authors')
-			.expect(200, (e, res) => {
+			.expect(200, () => {
 				// Nothing
 			});
 	});
@@ -110,7 +109,7 @@ describe('createRouter()', () => {
 		const request = supertest(app);
 
 		request.get('/authors')
-			.expect(200, (e, res) => {
+			.expect(200, () => {
 				request.get('/posts')
 					.expect(200, (e, res) => {
 						assert.equal(res.body.posts.length, 3);
@@ -126,7 +125,7 @@ describe('createRouter()', () => {
 				model: db.author,
 				options: {
 					middleware: [
-						(req, res, next) => {
+						() => {
 							done('failed');
 						}
 					]
@@ -138,7 +137,7 @@ describe('createRouter()', () => {
 					req.testValue = 'test';
 					return next();
 				},
-				(req, res, next) => {
+				() => {
 					done();
 				}
 			]
@@ -146,7 +145,7 @@ describe('createRouter()', () => {
 		const request = supertest(app);
 
 		request.get('/authors')
-			.expect(200, (e, res) => {
+			.expect(200, () => {
 				// Nothing
 			});
 	});

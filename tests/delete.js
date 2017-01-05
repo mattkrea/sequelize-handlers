@@ -42,7 +42,7 @@ describe('DELETE /<model>/<id>', () => {
 						authorId: 2
 					}
 				]);
-			})
+			});
 		}).then(() => {
 			done();
 		}).catch(done);
