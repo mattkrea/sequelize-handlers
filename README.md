@@ -2,6 +2,13 @@
 Create REST handers for Sequelize models
 
 ## Usage
+
+### Creating Individual Controllers
+
+If you only need a couple of handlers you can create one for each model
+on your own with the syntax below. If you want to create an API for a series
+of models check out [Creating Entire APIs](#creating-entire-apis).
+
 ```js
 	const { createController } = require('@harbortouch/sequelize-rest-handlers');
 	const models = require('./models');
@@ -58,6 +65,56 @@ Create REST handers for Sequelize models
 	// DELETE /api/v1/articles/:articleId
 
 	app.use('/api/v1/articles', router);
+
+	app.listen(8080);
+```
+
+### Creating Entire APIs
+```js
+	const { createRouter } = require('@harbortouch/sequelize-rest-handlers');
+	const models = require('./models');
+	const app = require('express')();
+
+	const router = createRouter([
+		// You can include either a model by itself
+		models.Article,
+		// Or you can include a set of options as you would for `createController`
+		{
+			model: models.Author,
+			options: {
+				handlers: {
+					put: false
+				}
+			},
+			limit: 10
+		}
+	], {
+		// You can also include top-level middleware that will go before
+		// all other endpoints
+		middleware: [
+			(req, res, next) => {
+				logger.debug(`${req.method}: ${req.originalUrl} [${req.ip}]);
+				return next();
+			}
+		],
+		// Or you can specify global options for items such as `limit`
+		// **Note**: You can override the globals by setting the same property
+		//           with a different value on the specific controller's options
+		limit: 5
+	});
+
+	app.use('/api/v1', router);
+
+	// The resulting app will be able to handle:
+	// GET /api/v1/articles/
+	// GET /api/v1/articles/:articleId
+	// PUT /api/v1/articles/:articleId
+	// POST /api/v1/articles/
+	// DELETE /api/v1/articles/:articleId
+	// GET /api/v1/posts
+	// GET /api/v1/posts/:postId
+	// PUT /api/v1/posts/:postId
+	// ... etc ...
 
 	app.listen(8080);
 ```
