@@ -4,7 +4,7 @@ Create REST handers for Sequelize models
 
 ## Installation
 
-`npm install sequelize-handlers`
+`npm install sequelize-rest-handlers`
 
 ## Usage
 
