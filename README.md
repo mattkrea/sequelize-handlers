@@ -93,13 +93,13 @@ of models check out [Creating Entire APIs](#creating-entire-apis).
 		// all other endpoints
 		middleware: [
 			(req, res, next) => {
-				logger.debug(`${req.method}: ${req.originalUrl} [${req.ip}]);
+				logger.debug(`${req.method}: ${req.originalUrl} [${req.ip}]`);
 				return next();
 			}
 		],
 		// Or you can specify global options for items such as `limit`
-		// **Note**: You can override the globals by setting the same property
-		//           with a different value on the specific controller's options
+		// Note: You can override the globals by setting the same property
+		// with a different value on the specific controller's options
 		limit: 5
 	});
 
