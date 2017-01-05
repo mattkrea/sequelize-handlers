@@ -188,7 +188,7 @@ let createController = (model, options) => {
 		// Nothing to do here
 	}
 
-	if (options.middleware && Array.isArray(options.middleware)) {
+	if (Array.isArray(options.middleware)) {
 		options.middleware.forEach((middleware) => {
 			router.use(middleware);
 		});
