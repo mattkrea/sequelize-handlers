@@ -1,6 +1,6 @@
 {
-  "name": "@harbortouch/sequelize-rest-handlers",
-  "version": "1.4.0",
+  "name": "sequelize-rest-handlers",
+  "version": "1.0.0",
   "description": "Create REST handlers for Sequelize models",
   "main": "index.js",
   "scripts": {
@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Harbortouch/sequelize-rest-handlers.git"
+    "url": "git+https://github.com/mattkrea/sequelize-handlers.git"
   },
   "keywords": [
     "sequelize",
@@ -20,9 +20,9 @@
   "author": "mattkrea",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/Harbortouch/sequelize-rest-handlers/issues"
+    "url": "https://github.com/mattkrea/sequelize-handlers/issues"
   },
-  "homepage": "https://github.com/Harbortouch/sequelize-rest-handlers#readme",
+  "homepage": "https://github.com/mattkrea/sequelize-handlers#readme",
   "dependencies": {
     "body-parser": "^1.15.2",
     "dasherize": "^2.0.0",

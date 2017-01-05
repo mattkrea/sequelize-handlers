@@ -1,5 +1,10 @@
-# Sequelize REST Handlers
+# Sequelize Handlers
+
 Create REST handers for Sequelize models
+
+## Installation
+
+`npm install sequelize-handlers`
 
 ## Usage
 
@@ -70,6 +75,9 @@ of models check out [Creating Entire APIs](#creating-entire-apis).
 ```
 
 ### Creating Entire APIs
+
+If you just want to generate endpoints for all of your models you can use `createRouter`.
+
 ```js
 	const { createRouter } = require('@harbortouch/sequelize-rest-handlers');
 	const models = require('./models');
