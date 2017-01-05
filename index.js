@@ -88,13 +88,16 @@ let buildWhere = (method, req, options) => {
 
 		if (req.query.search) {
 			Object.keys(req.query.search).forEach((field) => {
+
+				let like = `%${req.query.search[field]}%`;
+
 				if (options.useLike === true) {
 					query.where[field] = {
-						$like: `%${req.query.search[field]}%`
+						$like: like
 					};
 				} else {
 					query.where[field] = {
-						$iLike: `%${req.query.search[field]}%`
+						$iLike: like
 					};
 				}
 			});
@@ -124,19 +127,22 @@ let formatOutput = (results, model, options) => {
 
 	if (options.disableNestedData === true) {
 		return results;
-	} else if (options.overrideOutputName) {
-		if (plural) {
-			response[pluralize(options.overrideOutputName)] = results;
-		} else {
-			response[options.overrideOutputName] = results;
-		}
-	} else {
-		if (plural) {
-			response[pluralize(model.name)] = results;
-		} else {
-			response[model.name] = results;
-		}
 	}
+
+	let outputName;
+
+	if (options.overrideOutputName) {
+		outputName = options.overrideOutputName;
+	} else {
+		outputName = model.name;
+	}
+
+	if (plural) {
+		outputName = pluralize(outputName);
+	}
+
+	response[outputName] = results;
+
 	return response;
 };
 
