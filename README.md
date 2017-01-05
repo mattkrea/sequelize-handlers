@@ -15,7 +15,7 @@ on your own with the syntax below. If you want to create an API for a series
 of models check out [Creating Entire APIs](#creating-entire-apis).
 
 ```js
-	const { createController } = require('@harbortouch/sequelize-rest-handlers');
+	const { createController } = require('sequelize-rest-handlers');
 	const models = require('./models');
 	const app = require('express')();
 
@@ -79,7 +79,7 @@ of models check out [Creating Entire APIs](#creating-entire-apis).
 If you just want to generate endpoints for all of your models you can use `createRouter`.
 
 ```js
-	const { createRouter } = require('@harbortouch/sequelize-rest-handlers');
+	const { createRouter } = require('sequelize-rest-handlers');
 	const models = require('./models');
 	const app = require('express')();
 
