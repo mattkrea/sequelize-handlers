@@ -4,7 +4,7 @@
   "description": "Create REST handlers for Sequelize models",
   "main": "index.js",
   "scripts": {
-    "test": "mocha tests"
+    "test": "istanbul cover _mocha tests"
   },
   "repository": {
     "type": "git",
