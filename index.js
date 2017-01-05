@@ -19,6 +19,36 @@ const errors = {
 	invalidModel: new TypeError(`'model' must be a valid Sequelize model`)
 };
 
+let handleRequestError = (req, res) => {
+	return (e) => {
+		switch (e.name) {
+		case 'SequelizeForeignKeyConstraintError':
+			return res.status(400).json({ errors: [{ message: 'foreign key constraint error' }]});
+		case 'SequelizeValidationError':
+		case 'SequelizeUniqueConstraintError':
+
+			var results = [];
+			e.errors.forEach((x) => {
+				results.push({
+					message: x.message,
+					field: x.path
+				});
+			});
+
+			return res.status(422).json({ errors: results });
+		case 'SequelizeDatabaseError':
+			return res.status(422).json({ errors: [{ message: e.message }] });
+		}
+
+		switch (e) {
+		case errors.notFound:
+			return res.status(404).json({ errors: [{ message: e.message }] });
+		}
+
+		return res.status(500).json({ errors: [{ message: e.message }] });
+	};
+};
+
 let buildWhere = (method, req, options) => {
 	let query = {
 		where: {},
@@ -61,11 +91,11 @@ let buildWhere = (method, req, options) => {
 				if (options.useLike === true) {
 					query.where[field] = {
 						$like: `%${req.query.search[field]}%`
-					}
+					};
 				} else {
 					query.where[field] = {
 						$iLike: `%${req.query.search[field]}%`
-					}
+					};
 				}
 			});
 		}
@@ -183,14 +213,7 @@ let createController = (model, options) => {
 				}
 
 				return res.status(200).json(formatOutput(results, model, options));
-			}).catch((e) => {
-				switch (e) {
-				case errors.notFound:
-					return res.status(404).json({ errors: [{ message: e.message }] });
-				}
-
-				return res.status(500).json({ errors: [{ message: e.message }] });
-			});
+			}).catch(handleRequestError(req, res));
 		});
 	}
 
@@ -206,25 +229,7 @@ let createController = (model, options) => {
 				}
 
 				return res.status(200).json(formatOutput(results, model, options));
-			}).catch((e) => {
-				switch (e.name) {
-				case 'SequelizeValidationError':
-				case 'SequelizeUniqueConstraintError':
-
-					let results = [];
-
-					e.errors.forEach((x) => {
-						results.push({
-							message: x.message,
-							field: x.path
-						});
-					});
-
-					return res.status(422).json({ errors: results });
-				}
-
-				return res.status(500).json({ errors: [{ message: e.message }] });
-			});
+			}).catch(handleRequestError(req, res));
 		});
 	}
 
@@ -269,32 +274,7 @@ let createController = (model, options) => {
 				}
 
 				return res.status(200).json(formatOutput(results, model, options));
-			}).catch((e) => {
-				switch (e.name) {
-				case 'SequelizeValidationError':
-				case 'SequelizeUniqueConstraintError':
-
-					let results = [];
-
-					e.errors.forEach((x) => {
-						results.push({
-							message: x.message,
-							field: x.path
-						});
-					});
-
-					return res.status(422).json({ errors: results });
-				case 'SequelizeDatabaseError':
-					return res.status(422).json({ errors: [{ message: e.message }] });
-				}
-
-				switch (e) {
-				case errors.notFound:
-					return res.status(404).json({ errors: [{ message: e.message }] });
-				}
-
-				return res.status(500).json({ errors: [{ message: e.message }] });
-			});
+			}).catch(handleRequestError(req, res));
 		});
 	}
 
@@ -306,19 +286,7 @@ let createController = (model, options) => {
 				}
 
 				return res.status(200).json({ status: 'ok' });
-			}).catch((e) => {
-				switch (e.name) {
-				case 'SequelizeForeignKeyConstraintError':
-					return res.status(400).json({ errors: [{ message: 'foreign key constraint error' }]});
-				}
-
-				switch (e) {
-				case errors.notFound:
-					return res.status(404).json({ errors: [{ message: e.message }] });
-				}
-
-				return res.status(500).json({ errors: [{ message: e.message }] });
-			});
+			}).catch(handleRequestError(req, res));
 		});
 	}
 
