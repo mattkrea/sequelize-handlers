@@ -2,7 +2,7 @@
 
 Create REST handers for Sequelize models
 
-[![npm version](https://badge.fury.io/js/sequelize-rest-handlers.svg)](https://badge.fury.io/js/sequelize-rest-handlers) [![Build Status](https://travis-ci.org/mattkrea/sequelize-handlers.svg?branch=master)](https://travis-ci.org/mattkrea/sequelize-handlers) [![Dependency Status](https://david-dm.org/mattkrea/sequelize-handlers.svg)](https://david-dm.org/mattkrea/sequelize-handlers)
+[![npm version](https://badge.fury.io/js/sequelize-rest-handlers.svg)](https://badge.fury.io/js/sequelize-rest-handlers) [![Build Status](https://travis-ci.org/mattkrea/sequelize-handlers.svg?branch=master)](https://travis-ci.org/mattkrea/sequelize-handlers)
 
 ## Installation
 
