@@ -168,10 +168,7 @@ let createController = (model, options) => {
 			post: true,
 			delete: true
 		},
-		middleware: {
-			pre: [],
-			post: []
-		},
+		middleware: [],
 		useLike: true
 	}, options);
 
