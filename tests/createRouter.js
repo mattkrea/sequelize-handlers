@@ -164,6 +164,20 @@ describe('createRouter()', () => {
 			});
 	});
 
+	it('should ignore out of range top-level controller options (global limit)', (done) => {
+		const app = require('express')();
+		app.use(createRouter([db.author], {
+			limit: 1
+		}));
+		const request = supertest(app);
+
+		request.get('/authors?limit=2')
+			.expect(200, (e, res) => {
+				assert.equal(res.body.authors.length, 1);
+				done();
+			});
+	});
+
 	it('should accept top-level controller options (handlers)', (done) => {
 		const app = require('express')();
 		app.use(createRouter([db.author], {
