@@ -70,10 +70,10 @@ let buildWhere = (method, req, options) => {
 	}
 
 	if (method === methods.GET) {
-		if (req.query.limit) {
-			query.limit = req.query.limit;
-		} else if (options.limit) {
-			query.limit = options.limit;
+		if(options.limit && req.query.limit) {
+			query.limit = req.query.limit > options.limit ? options.limit : req.query.limit;
+		} else {
+			query.limit = req.query.limit || options.limit;
 		}
 
 		if (req.query.offset) {
@@ -168,10 +168,7 @@ let createController = (model, options) => {
 			post: true,
 			delete: true
 		},
-		middleware: {
-			pre: [],
-			post: []
-		},
+		middleware: [],
 		useLike: true
 	}, options);
 
