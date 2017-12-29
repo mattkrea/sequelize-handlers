@@ -1,6 +1,6 @@
 {
   "name": "sequelize-rest-handlers",
-  "version": "1.0.1",
+  "version": "2.0.0-beta1",
   "description": "Create REST handlers for Sequelize models",
   "main": "index.js",
   "scripts": {
@@ -27,7 +27,7 @@
     "body-parser": "^1.15.2",
     "dasherize": "^2.0.0",
     "express": "^4.14.0",
-    "sequelize": "^3.27.0"
+    "sequelize": "^4.28.2"
   },
   "devDependencies": {
     "eslint": "^3.12.2",

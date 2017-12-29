@@ -153,7 +153,7 @@ describe('createController()', () => {
 		app.use('/authors', createController(db.author, {
 			hooks: {
 				beforeUpdate: (model, instance) => {
-					assert.equal(instance instanceof Sequelize.Instance, true);
+					assert.equal(instance.toString().indexOf('object SequelizeInstance') != -1, true);
 					done();
 				}
 			}
@@ -178,7 +178,7 @@ describe('createController()', () => {
 		app.use('/authors', createController(db.author, {
 			hooks: {
 				afterUpdate: (model, instance) => {
-					assert.equal(instance instanceof Sequelize.Instance, true);
+					assert.equal(instance.toString().indexOf('object SequelizeInstance') != -1, true);
 					done();
 				}
 			}

@@ -148,7 +148,7 @@ let formatOutput = (results, model, options) => {
 
 let createController = (model, options) => {
 
-	if (!(model instanceof Sequelize.Model)) {
+	if (!(model instanceof Sequelize.Model) && !(model.prototype &&  model.prototype instanceof	Sequelize.Model)) {
 		throw errors.invalidModel;
 	}
 
@@ -341,9 +341,9 @@ let createRouter = (controllerOptions, routerOptions) => {
 			});
 		}
 
-		if (controller instanceof Sequelize.Model) {
+		if (controller instanceof Sequelize.Model || (controller.prototype && controller.prototype instanceof Sequelize.Model)) {
 			model = controller;
-		} else if (controller.model instanceof Sequelize.Model) {
+		} else if (controller.model instanceof Sequelize.Model || (controller.model.prototype && controller.model.prototype instanceof Sequelize.Model)) {
 			model = controller.model;
 			options = Object.assign(options, controller.options);
 		} else {

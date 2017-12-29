@@ -49,7 +49,7 @@ describe('POST /<model>', () => {
 		request.post('/authors')
 			.expect(422, (e, res) => {
 				assert.equal(res.body.errors.length, 1);
-				assert.equal(res.body.errors[0].message, 'name cannot be null');
+				assert.equal(res.body.errors[0].message, 'author.name cannot be null');
 				done();
 			});
 	});
