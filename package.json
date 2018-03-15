@@ -1,6 +1,6 @@
 {
   "name": "sequelize-rest-handlers",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Create REST handlers for Sequelize models",
   "main": "index.js",
   "scripts": {
