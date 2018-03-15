@@ -1,10 +1,10 @@
 {
   "name": "sequelize-rest-handlers",
-  "version": "2.0.0-beta1",
+  "version": "2.0.0",
   "description": "Create REST handlers for Sequelize models",
   "main": "index.js",
   "scripts": {
-    "test": "istanbul cover _mocha tests"
+    "test": "nyc mocha --exit tests"
   },
   "repository": {
     "type": "git",
@@ -26,15 +26,16 @@
   "dependencies": {
     "body-parser": "^1.15.2",
     "dasherize": "^2.0.0",
-    "express": "^4.14.0",
-    "sequelize": "^4.28.2"
+    "express": "^4.16.3",
+    "sequelize": "^4.37.0"
   },
   "devDependencies": {
-    "eslint": "^3.12.2",
+    "babel-eslint": "^8.2.2",
+    "eslint": "^4.18.2",
     "istanbul": "^0.4.5",
-    "mocha": "^3.2.0",
-    "sequelize": "^3.27.0",
-    "sqlite3": "^3.1.8",
-    "supertest": "^2.0.1"
+    "mocha": "^5.0.4",
+    "nyc": "^11.6.0",
+    "sqlite3": "^3.1.13",
+    "supertest": "^3.0.0"
   }
 }

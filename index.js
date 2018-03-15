@@ -1,29 +1,18 @@
 'use strict';
 
+const { methods, errors } = require('./lib/constants');
+const { buildWhere } = require('./lib/querying');
+const { formatOutput } = require('./lib/utils');
 const Sequelize = require('sequelize');
-const pluralize = Sequelize.Utils.pluralize;
 const dasherize = require('dasherize');
 const parser = require('body-parser');
 const express = require('express');
-
-const methods = {
-	GET: 'GET',
-	PUT: 'PUT',
-	POST: 'POST',
-	PATCH: 'PATCH',
-	DELETE: 'DELETE'
-};
-
-const errors = {
-	notFound: new Error(`record not found`),
-	invalidModel: new TypeError(`'model' must be a valid Sequelize model`)
-};
 
 let handleRequestError = (req, res) => {
 	return (e) => {
 		switch (e.name) {
 		case 'SequelizeForeignKeyConstraintError':
-			return res.status(400).json({ errors: [{ message: 'foreign key constraint error' }]});
+			return res.status(400).json({ errors: [{ message: 'foreign key constraint error' }] });
 		case 'SequelizeValidationError':
 		case 'SequelizeUniqueConstraintError':
 
@@ -47,103 +36,6 @@ let handleRequestError = (req, res) => {
 
 		return res.status(500).json({ errors: [{ message: e.message }] });
 	};
-};
-
-let buildWhere = (method, req, options) => {
-	let query = {
-		where: {},
-		include: options.relationships,
-		limit: undefined,
-		offset: undefined
-	};
-
-	if (req.params.id) {
-		query.where.id = req.params.id;
-	}
-
-	if (method === methods.POST) {
-		query.returning = true;
-	}
-
-	if (method === methods.DELETE) {
-		query.limit = 1;
-	}
-
-	if (method === methods.GET) {
-		if(options.limit && req.query.limit) {
-			query.limit = req.query.limit > options.limit ? options.limit : req.query.limit;
-		} else {
-			query.limit = req.query.limit || options.limit;
-		}
-
-		if (req.query.offset) {
-			query.offset = req.query.offset;
-		}
-
-		if (req.query.filter) {
-			Object.keys(req.query.filter).forEach((field) => {
-				query.where[field] = req.query.filter[field];
-			});
-		}
-
-		if (req.query.search) {
-			Object.keys(req.query.search).forEach((field) => {
-
-				let like = `%${req.query.search[field]}%`;
-
-				if (options.useLike === true) {
-					query.where[field] = {
-						$like: like
-					};
-				} else {
-					query.where[field] = {
-						$iLike: like
-					};
-				}
-			});
-		}
-
-		if (req.query.attributes) {
-			try {
-				req.query.attributes = req.query.attributes.split(',');
-			} catch (e) {
-				// Should we error here?
-			}
-
-			query.attributes = req.query.attributes;
-		}
-	}
-
-	if (options.hooks && typeof options.hooks.beforeQuery === 'function') {
-		options.hooks.beforeQuery(query, req);
-	}
-
-	return query;
-};
-
-let formatOutput = (results, model, options) => {
-	let response = {};
-	let plural = Array.isArray(results);
-
-	if (options.disableNestedData === true) {
-		return results;
-	}
-
-	let outputName;
-
-	if (options.overrideOutputName) {
-		outputName = options.overrideOutputName;
-	} else {
-		outputName = model.name;
-	}
-
-	if (plural) {
-		outputName = pluralize(outputName);
-	}
-
-	response[outputName] = results;
-
-	return response;
 };
 
 let createController = (model, options) => {
