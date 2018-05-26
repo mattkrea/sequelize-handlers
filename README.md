@@ -43,6 +43,8 @@ of models check out [Creating Entire APIs](#creating-entire-apis).
 				]
 			}
 		],
+		// Optionally create child routes e.g. GET /api/v1/articles/:articleId/author
+		createChildren: false,
 		// Optionally add middleware to run at the start of the request
 		middleware: [
 			(req, res, next) => {
@@ -107,6 +109,8 @@ If you just want to generate endpoints for all of your models you can use `creat
 				return next();
 			}
 		],
+		// Optionally create child routes e.g. GET /api/v1/articles/:articleId/author
+		createChildren: false,
 		// Or you can specify global options for items such as `limit`
 		// Note: You can override the globals by setting the same property
 		// with a different value on the specific controller's options

@@ -3,7 +3,6 @@
 const { formatOutput, isSequelizeModel } = require('./lib/utils');
 const { methods, errors } = require('./lib/constants');
 const { buildWhere } = require('./lib/querying');
-const Sequelize = require('sequelize');
 const dasherize = require('dasherize');
 const parser = require('body-parser');
 const express = require('express');
@@ -38,6 +37,69 @@ const handleRequestError = (req, res) => {
 	};
 };
 
+const createChildren = (router, model, opts) => {
+
+	const associations = Object.keys(model.associations);
+	if (associations.length === 0) {
+		return;
+	}
+
+	for (const association of associations) {
+
+		// For now we can't support models with a mapping table
+		// so skip if we encounter any
+		if (typeof model.associations[association].through !== 'undefined') {
+			continue;
+		}
+
+		// We also need to disallow overriding output names for children
+		// currently since they would conflict with the parent
+		const options = Object.assign(opts, { overrideOutputName: null });
+
+		const child = model.associations[association].target;
+
+		if (options.handlers.get === true) {
+			router.get(`/:parent/${dasherize(association)}/:id`, (req, res) => {
+
+				let query = buildWhere(methods.GET, req, options);
+
+				// Adjust the query to filter on the child
+				query.where[model.associations[association].foreignKey] = req.params.parent;
+
+				// Exclude relations since we will assume the caller already
+				// knows the related (i.e. parent) models
+				delete query.include;
+
+				child.findOne(buildWhere(methods.GET, req, options)).then((results) => {
+					if (!results) {
+						throw errors.notFound;
+					}
+
+					return res.status(200).json(formatOutput(results, child, options));
+				}).catch(handleRequestError(req, res));
+			});
+
+			router.get(`/:parent/${dasherize(association)}`, (req, res) => {
+
+				let query = buildWhere(methods.GET, req, options);
+
+				// Adjust the query to filter on the child
+				query.where[model.associations[association].foreignKey] = req.params.parent;
+
+				// Exclude relations since we will assume the caller already
+				// knows the related (i.e. parent) models
+				delete query.include;
+
+				child.findAll(query).then((results) => {
+					return res.status(200).json(formatOutput(results, child, options));
+				}).catch((e) => {
+					return res.status(500).json({ errors: [{ message: e.message }] });
+				});
+			});
+		}
+	}
+};
+
 const createController = (model, options) => {
 
 	if (!isSequelizeModel(model)) {
@@ -54,6 +116,7 @@ const createController = (model, options) => {
 		limit: undefined,
 		restrictedFields: [],
 		relationships: [],
+		createChildren: false,
 		handlers: {
 			get: true,
 			put: true,
@@ -183,6 +246,10 @@ const createController = (model, options) => {
 				return res.status(200).json({ status: 'ok' });
 			}).catch(handleRequestError(req, res));
 		});
+	}
+
+	if (options.createChildren === true) {
+		createChildren(router, model, options);
 	}
 
 	return router;
