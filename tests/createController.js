@@ -7,39 +7,17 @@ const assert = require('assert');
 const db = require('./db');
 
 describe('createController()', () => {
-	before((done) => {
-		db.sequelize.sync({ force: true }).then(() => {
-			return db.author.bulkCreate([
-				{
-					id: 1,
-					name: 'Bud'
-				},
-				{
-					id: 2,
-					name: 'Frank'
-				}
-			]).then(() => {
-				return db.post.bulkCreate([
-					{
-						id: 1,
-						authorId: 1,
-						title: 'One Title'
-					},
-					{
-						id: 2,
-						authorId: 1,
-						title: 'Two Titles'
-					},
-					{
-						id: 3,
-						authorId: 2,
-						title: 'Three Titles'
-					}
-				]);
-			});
-		}).then(() => {
-			done();
-		}).catch(done);
+	before(async () => {
+		await db.sequelize.sync({ force: true })
+		await db.author.bulkCreate([
+			{ id: 1, name: 'Bud' },
+			{ id: 2, name: 'Frank' }
+		]);
+		await db.post.bulkCreate([
+			{ id: 1, authorId: 1, title: 'One Title' },
+			{ id: 2, authorId: 1, title: 'Two Titles' },
+			{ id: 3, authorId: 2, title: 'Three Titles' }
+		]);
 	});
 
 	it('should require a Sequelize model', (done) => {
