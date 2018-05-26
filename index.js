@@ -1,22 +1,21 @@
 'use strict';
 
+const { formatOutput, isSequelizeModel } = require('./lib/utils');
 const { methods, errors } = require('./lib/constants');
 const { buildWhere } = require('./lib/querying');
-const { formatOutput } = require('./lib/utils');
 const Sequelize = require('sequelize');
 const dasherize = require('dasherize');
 const parser = require('body-parser');
 const express = require('express');
 
-let handleRequestError = (req, res) => {
+const handleRequestError = (req, res) => {
 	return (e) => {
 		switch (e.name) {
 		case 'SequelizeForeignKeyConstraintError':
 			return res.status(400).json({ errors: [{ message: 'foreign key constraint error' }] });
 		case 'SequelizeValidationError':
-		case 'SequelizeUniqueConstraintError':
-
-			var results = [];
+		case 'SequelizeUniqueConstraintError': {
+			const results = [];
 			e.errors.forEach((x) => {
 				results.push({
 					message: x.message,
@@ -25,6 +24,7 @@ let handleRequestError = (req, res) => {
 			});
 
 			return res.status(422).json({ errors: results });
+		}
 		case 'SequelizeDatabaseError':
 			return res.status(422).json({ errors: [{ message: e.message }] });
 		}
@@ -38,9 +38,9 @@ let handleRequestError = (req, res) => {
 	};
 };
 
-let createController = (model, options) => {
+const createController = (model, options) => {
 
-	if (!(model instanceof Sequelize.Model) && !(model.prototype &&  model.prototype instanceof	Sequelize.Model)) {
+	if (!isSequelizeModel(model)) {
 		throw errors.invalidModel;
 	}
 
@@ -188,7 +188,7 @@ let createController = (model, options) => {
 	return router;
 };
 
-let createRouter = (controllerOptions, routerOptions) => {
+const createRouter = (controllerOptions, routerOptions) => {
 
 	if (!Array.isArray(controllerOptions)) {
 		throw new TypeError(`'controllerOptions' must be an array`);
@@ -233,9 +233,9 @@ let createRouter = (controllerOptions, routerOptions) => {
 			});
 		}
 
-		if (controller instanceof Sequelize.Model || (controller.prototype && controller.prototype instanceof Sequelize.Model)) {
+		if (isSequelizeModel(controller)) {
 			model = controller;
-		} else if (controller.model instanceof Sequelize.Model || (controller.model.prototype && controller.model.prototype instanceof Sequelize.Model)) {
+		} else if (isSequelizeModel(controller.model)) {
 			model = controller.model;
 			options = Object.assign(options, controller.options);
 		} else {
