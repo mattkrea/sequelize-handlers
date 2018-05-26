@@ -96,7 +96,9 @@ If you just want to generate endpoints for all of your models you can use `creat
 			options: {
 				handlers: {
 					put: false
-				}
+				},
+				// Optionally create child routes only for this model
+				createChildren: true
 			},
 			limit: 10
 		}

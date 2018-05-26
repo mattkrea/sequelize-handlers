@@ -5,14 +5,8 @@ const assert = require('assert');
 const db = require('./db');
 
 const plural = [
-	{
-		id: 1,
-		name: 'Tester'
-	},
-	{
-		id: 2,
-		name: 'Another'
-	}
+	{ id: 1, name: 'Tester' },
+	{ id: 2, name: 'Another' }
 ];
 
 const singular = {
