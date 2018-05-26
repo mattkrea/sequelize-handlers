@@ -1,2 +1,4 @@
 **/*{.,-}min.js
 tests
+coverage
+node_modules
