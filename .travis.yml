@@ -3,8 +3,6 @@ env:
   global:
     - CC_TEST_REPORTER_ID=09192ec8711b4ae6d95ce79a955a12185012e72b9e715e3d747006704c3ae9db
 node_js:
-  - "8"
-  - "10"
   - "12"
 before_install:
   - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
@@ -17,5 +15,5 @@ script:
   - npm test
 after_success:
   - ./cc-test-reporter format-coverage -t lcov -o coverage/codeclimate.json coverage/lcov.info
-  - ./cc-test-reporter sum-coverage coverage/codeclimate.json
+  - ./cc-test-reporter sum-coverage coverage/codeclimate.*.json -p 1
   - ./cc-test-reporter upload-coverage
