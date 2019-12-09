@@ -1,16 +1,17 @@
 language: node_js
 env:
-  - CODECLIMATE_REPO_TOKEN=09192ec8711b4ae6d95ce79a955a12185012e72b9e715e3d747006704c3ae9db
+  global:
+    - CC_TEST_REPORTER_ID=09192ec8711b4ae6d95ce79a955a12185012e72b9e715e3d747006704c3ae9db
 node_js:
-  - "7"
-  - "8"
-  - "9"
+  - "12"
+before_install:
+  - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+  - chmod +x ./cc-test-reporter
+  - ./cc-test-reporter before-build
 install:
   - yarn install
 script:
-  - npm run nsp
   - npm run lint
   - npm test
 after_success:
-  - npm install -g codeclimate-test-reporter
-  - codeclimate-test-reporter < coverage/lcov.info
+  - ./cc-test-reporter after-build -t lcov
